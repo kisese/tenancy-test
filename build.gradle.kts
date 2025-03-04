@@ -19,6 +19,14 @@ configurations {
     }
 }
 
+tasks.jar {
+    archiveFileName.set("app.jar")
+}
+
+springBoot {
+    mainClass = "com.basigo.project.ProjectBasigoApplication"
+}
+
 repositories {
     mavenCentral()
 }

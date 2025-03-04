@@ -25,6 +25,6 @@ ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
 ARG SERVER_PORT="8080"
 ENV SERVER_PORT=${SERVER_PORT}
 
-COPY --from=builder /usr/src/app/build/libs/vccm-*.jar ./app.jar
+COPY --from=builder /usr/src/app/build/libs/projectBasigo-*.jar ./app.jar
 
 ENTRYPOINT [ "java", "-jar", "app.jar" ]

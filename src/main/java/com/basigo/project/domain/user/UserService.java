@@ -1,7 +1,11 @@
 package com.basigo.project.domain.user;
 
 import com.basigo.project.domain.user.mapper.UserMapper;
+import com.basigo.project.domain.user.model.UpdateUserOrganizationRequest;
 import com.basigo.project.domain.user.model.UserResponse;
+import com.basigo.project.exceptions.NotFoundException;
+import com.basigo.project.persistence.organization.entities.Organization;
+import com.basigo.project.persistence.organization.repositories.OrganizationRepository;
 import com.basigo.project.persistence.user.entities.User;
 import com.basigo.project.persistence.user.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
 
+    private final OrganizationRepository organizationRepository;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
@@ -25,5 +30,16 @@ public class UserService {
 
         return users
                 .map(userMapper::toUserResponse);
+    }
+
+    public void updateUserOrganization(Long userId, UpdateUserOrganizationRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        Organization organization = organizationRepository.findById(request.getOrganizationId())
+                .orElseThrow(() -> new NotFoundException("Organization not found"));
+
+        user.setOrganization(organization);
+        userRepository.save(user);
     }
 }

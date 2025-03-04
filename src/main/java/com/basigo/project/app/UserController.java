@@ -5,6 +5,7 @@ import com.basigo.project.domain.auth.model.RegistrationRequest;
 import com.basigo.project.domain.auth.model.LoginRequest;
 import com.basigo.project.domain.auth.model.LoginResponse;
 import com.basigo.project.domain.user.UserService;
+import com.basigo.project.domain.user.model.UpdateUserOrganizationRequest;
 import com.basigo.project.domain.user.model.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -52,6 +54,23 @@ public class UserController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody @Valid LoginRequest request) {
         return authService.authenticateUser(request);
+    }
+
+    @Operation(summary = "Update a user successfully", description = "Update a user successfully with an organization")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Updated a user successfully with an organization",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = UserResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Not found", content = @Content),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PutMapping("/{userId}/organization")
+    @PreAuthorize("hasAuthority('ADMIN')") // Only admins can update this
+    public UserResponse updateUserOrganization(
+            @PathVariable Long userId,
+            @RequestBody UpdateUserOrganizationRequest request) {
+
+        return userService.updateUserOrganization(userId, request);
     }
 
     @Operation(summary = "Get all Users", description = "Retrieve a list of all registered Users")
