@@ -21,7 +21,7 @@ A more advanced setup with subdomain routing can be achieved by modifying NGINX 
 
 For input validation a mix of JSR-303 annotations and custom validation annotations have been used. The custom validation annotations are used to validate the uniqueness of the organization name and the organization code.
 
-For multiple subsequent validations we have applied a delegation of contorl pattern to validators that can be extended to handle more complex validation scenarios.
+For multiple subsequent validations we have applied a delegation of control pattern to validators that can be extended to handle more complex validation scenarios.
 
 ### Pagination
 
@@ -29,7 +29,11 @@ Pagination has been implemented using the Pageable interface provided by Spring 
 
 ### Running the Application
 
-A live version of the application is available at `https://tenancy.apps.kisese.com/` and https://tenancy_ui.apps.kisese.com/
+A live version of the application is available at:
+
+- https://tenancy.apps.kisese.com/swagger-ui/index.html
+- https://tenancy.apps.kisese.com/
+- https://tenancy_ui.apps.kisese.com/
 
 To run the application, you can use the following command:
 
