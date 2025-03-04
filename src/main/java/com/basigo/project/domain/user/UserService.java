@@ -28,11 +28,10 @@ public class UserService {
 
         Page<User> users = userRepository.findAllByFilters(userId, email, pageable);
 
-        return users
-                .map(userMapper::toUserResponse);
+        return users.map(userMapper::toUserResponse);
     }
 
-    public void updateUserOrganization(Long userId, UpdateUserOrganizationRequest request) {
+    public UserResponse updateUserOrganization(Long userId, UpdateUserOrganizationRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -40,6 +39,6 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("Organization not found"));
 
         user.setOrganization(organization);
-        userRepository.save(user);
+        return userMapper.toUserResponse(userRepository.save(user));
     }
 }

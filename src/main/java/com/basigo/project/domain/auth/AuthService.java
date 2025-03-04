@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,14 +41,10 @@ public class AuthService {
                 .filter(validator -> validator.shouldValidate(request))
                 .forEach(validator -> validator.validate(request));
 
-//        Organization organization = organizationRepository.findById(request.getOrganizationId())
-//                .orElseThrow(() -> new NotFoundException("Organization not found"));
-
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-//        user.setOrganization(organization);
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
