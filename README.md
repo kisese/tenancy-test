@@ -13,7 +13,7 @@ API Documentation has been handled through swagger docs. Access the docs at `htt
 For Hosting the application, im using an open source PAAS tool called CapRover (https://caprover.com/). This allows for easy deployment of the
 application to a cloud provider. The application is hosted on a Digital Ocean Droplet.
 
-### Multitenancy Support (Application Level)
+#### Multitenancy Support (Application Level)
 
 For application level we have a single instance of a spring boot application and SQLITE database that is able to handle multiple tenants. The tenants are segregated by Organization. Each organization has a unique identifier that is used to differentiate between tenants.
 
