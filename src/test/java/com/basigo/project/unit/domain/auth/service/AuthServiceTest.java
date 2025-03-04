@@ -1,10 +1,10 @@
 package com.basigo.project.unit.domain.auth.service;
 
+import com.basigo.project.config.security.JwtTokenProvider;
 import com.basigo.project.domain.auth.AuthService;
+import com.basigo.project.domain.auth.model.LoginRequest;
+import com.basigo.project.domain.auth.model.LoginResponse;
 import com.basigo.project.domain.auth.model.RegistrationRequest;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.basigo.project.domain.user.mapper.UserMapper;
 import com.basigo.project.domain.user.model.UserResponse;
 import com.basigo.project.domain.validator.ConditionalValidator;
@@ -15,8 +15,14 @@ import com.basigo.project.persistence.user.entities.User;
 import com.basigo.project.persistence.user.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -45,52 +51,84 @@ public class AuthServiceTest {
     @Mock
     private List<ConditionalValidator<RegistrationRequest>> validators;
 
+    @Mock
+    private AuthenticationManager authenticationManager;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
     @InjectMocks
     private AuthService authService;
 
-    private RegistrationRequest request;
-    private Organization organization;
+    private RegistrationRequest registrationRequest;
+    private LoginRequest loginRequest;
     private User user;
     private UserResponse userResponse;
+    private Organization organization;
+    private Authentication authentication;
+    private UserDetails userDetails;
 
     @BeforeEach
     void setUp() {
-        request = new RegistrationRequest();
-        request.setUsername("testuser");
-        request.setEmail("testuser@example.com");
-        request.setPassword("password");
-        request.setOrganizationId(1L);
+        registrationRequest = new RegistrationRequest();
+        registrationRequest.setUsername("testuser");
+        registrationRequest.setEmail("testuser@example.com");
+        registrationRequest.setPassword("password");
 
-        organization = new Organization();
-        organization.setId(1L);
+        loginRequest = new LoginRequest();
+        loginRequest.setEmail("testuser@example.com");
+        loginRequest.setPassword("password");
 
         user = new User();
         user.setUsername("testuser");
         user.setEmail("testuser@example.com");
         user.setPassword("encodedPassword");
-        user.setOrganization(organization);
 
         userResponse = new UserResponse();
         userResponse.setUsername("testuser");
         userResponse.setEmail("testuser@example.com");
+
+        organization = new Organization();
+        organization.setId(1L);
+
+        authentication = mock(Authentication.class);
+        userDetails = mock(UserDetails.class);
     }
 
     @Test
     void registerUser_success() {
-        when(organizationRepository.findById(request.getOrganizationId())).thenReturn(Optional.of(organization));
-        when(passwordEncoder.encode(request.getPassword())).thenReturn("encodedPassword");
+        when(passwordEncoder.encode(registrationRequest.getPassword())).thenReturn("encodedPassword");
         when(userMapper.toUserResponse(any(User.class))).thenReturn(userResponse);
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
-        UserResponse result = authService.registerUser(request);
+        UserResponse result = authService.registerUser(registrationRequest);
 
         assertEquals(userResponse, result);
         verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void registerUser_organizationNotFound() {
-        when(organizationRepository.findById(request.getOrganizationId())).thenReturn(Optional.empty());
+    void authenticateUser_success() {
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
+        when(jwtTokenProvider.generateToken(userDetails)).thenReturn("token");
 
-        assertThrows(NotFoundException.class, () -> authService.registerUser(request));
+        LoginResponse result = authService.authenticateUser(loginRequest);
+
+        assertEquals("token", result.getToken());
+        assertEquals("testuser@example.com", result.getEmail());
+    }
+
+    @Test
+    void authenticateUser_organizationNotFound() {
+        user.setOrganization(organization);
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(authentication);
+        when(authentication.getPrincipal()).thenReturn(userDetails);
+        when(userRepository.findByEmail(loginRequest.getEmail())).thenReturn(Optional.of(user));
+        when(jwtTokenProvider.generateToken(userDetails)).thenReturn("token");
+        when(organizationRepository.findById(organization.getId())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> authService.authenticateUser(loginRequest));
     }
 }
