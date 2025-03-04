@@ -1,0 +1,6 @@
+package com.basigo.project.domain.auth.enums;
+
+public enum Role {
+    ROLE_USER,
+    ROLE_ADMIN
+}
