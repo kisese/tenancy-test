@@ -35,7 +35,7 @@ A live version of the application is available at:
 
 - https://tenancy.apps.kisese.com/swagger-ui/index.html
 - https://tenancy.apps.kisese.com/
-- https://tenancy_ui.apps.kisese.com/
+- https://tenancy-ui.apps.kisese.com/
 
 To run the application, you can use the following command:
 
